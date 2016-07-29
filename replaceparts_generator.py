@@ -11,18 +11,18 @@ descent = 234
 bl = 0
 br = width
 bw = br - bl
-bmh = (bl + br) / 2.0
+cx = (bl + br) / 2.0
 bb = -descent
 bt = ascent
 bh = bt - bb
-bmv = (bb + bt) / 2.0
-swl2 = 38 / 2.0
-swb2 = 112 / 2.0
-dlgap2 = 80 / 2.0
-dldisp = dlgap2 + 2 * swl2
+cy = (bb + bt) / 2.0
+swl2 = 72 / 2.0
+swh2 = 146 / 2.0
+dg2 = 118 / 2.0
+dd = dg2 + 2 * swl2
 
-xrefT = psMat.compose(psMat.translate(-2 * bmh, 0), psMat.scale(-1, 1))
-yrefT = psMat.compose(psMat.translate(0, -2 * bmv), psMat.scale(1, -1))
+xrefT = psMat.compose(psMat.translate(-2 * cx, 0), psMat.scale(-1, 1))
+yrefT = psMat.compose(psMat.translate(0, -2 * cy), psMat.scale(1, -1))
 
 def addchar(font, cp, contours):
     glyph = font.createChar(cp, 'uni{:04X}'.format(cp))
@@ -79,18 +79,18 @@ font.hhea_linegap = 0
 # Box drawing characters
 NONE   = 0
 LIGHT  = 1
-BOLD   = 2
+HEAVY  = 2
 DOUBLE = 3
 
 def boxdrawing_sbound(l, r, o):
     if l == NONE and r == NONE:
         return 0
     elif l == DOUBLE and r == DOUBLE and o == NONE:
-        return -dlgap2
+        return -dg2
     elif l == DOUBLE or r == DOUBLE:
-        return dldisp
-    elif l == BOLD or r == BOLD:
-        return swb2
+        return dd
+    elif l == HEAVY or r == HEAVY:
+        return swh2
     else:
         return swl2
 
@@ -98,76 +98,76 @@ def boxdrawing_dbound(l, r):
     if l == NONE and r == NONE:
         return (0, 0)
     elif l == DOUBLE and r == DOUBLE:
-        return (-dlgap2, -dlgap2)
+        return (-dg2, -dg2)
     elif l == DOUBLE and r == NONE:
-        return (-dlgap2, dldisp)
+        return (-dg2, dd)
     elif l == NONE and r == DOUBLE:
-        return (dldisp, -dlgap2)
+        return (dd, -dg2)
     else:
         return (swl2, swl2)
 
 def boxdrawing(left, top, right, bottom):
     contours = []
 
-    if left == LIGHT or left == BOLD:
-        bound = bmh + boxdrawing_sbound(top, bottom, right)
+    if left == LIGHT or left == HEAVY:
+        bound = cx + boxdrawing_sbound(top, bottom, right)
         if left == LIGHT:
-            contours.append(rect(bl, bmv - swl2, bound, bmv + swl2))
+            contours.append(rect(bl, cy - swl2, bound, cy + swl2))
         else:
-            contours.append(rect(bl, bmv - swb2, bound, bmv + swb2))
+            contours.append(rect(bl, cy - swh2, bound, cy + swh2))
     elif left == DOUBLE:
-        bound1, bound2 = (bmh + x for x in boxdrawing_dbound(top, bottom))
-        contours.append(rect(bl, bmv + dlgap2, bound1, bmv + dldisp))
-        contours.append(rect(bl, bmv - dldisp, bound2, bmv - dlgap2))
+        bound1, bound2 = (cx + x for x in boxdrawing_dbound(top, bottom))
+        contours.append(rect(bl, cy + dg2, bound1, cy + dd))
+        contours.append(rect(bl, cy - dd, bound2, cy - dg2))
 
-    if top == LIGHT or top == BOLD:
-        bound = bmv - boxdrawing_sbound(right, left, bottom)
+    if top == LIGHT or top == HEAVY:
+        bound = cy - boxdrawing_sbound(right, left, bottom)
         if top == LIGHT:
-            contours.append(rect(bmh - swl2, bound, bmh + swl2, bt))
+            contours.append(rect(cx - swl2, bound, cx + swl2, bt))
         else:
-            contours.append(rect(bmh - swb2, bound, bmh + swb2, bt))
+            contours.append(rect(cx - swh2, bound, cx + swh2, bt))
     elif top == DOUBLE:
-        bound1, bound2 = (bmv - x for x in boxdrawing_dbound(right, left))
-        contours.append(rect(bmh + dlgap2, bound1, bmh + dldisp, bt))
-        contours.append(rect(bmh - dldisp, bound2, bmh - dlgap2, bt))
+        bound1, bound2 = (cy - x for x in boxdrawing_dbound(right, left))
+        contours.append(rect(cx + dg2, bound1, cx + dd, bt))
+        contours.append(rect(cx - dd, bound2, cx - dg2, bt))
 
-    if right == LIGHT or right == BOLD:
-        bound = bmh - boxdrawing_sbound(bottom, top, left)
+    if right == LIGHT or right == HEAVY:
+        bound = cx - boxdrawing_sbound(bottom, top, left)
         if right == LIGHT:
-            contours.append(rect(bound, bmv - swl2, br, bmv + swl2))
+            contours.append(rect(bound, cy - swl2, br, cy + swl2))
         else:
-            contours.append(rect(bound, bmv - swb2, br, bmv + swb2))
+            contours.append(rect(bound, cy - swh2, br, cy + swh2))
     elif right == DOUBLE:
-        bound1, bound2 = (bmh - x for x in boxdrawing_dbound(bottom, top))
-        contours.append(rect(bound1, bmv - dldisp, br, bmv - dlgap2))
-        contours.append(rect(bound2, bmv + dlgap2, br, bmv + dldisp))
+        bound1, bound2 = (cx - x for x in boxdrawing_dbound(bottom, top))
+        contours.append(rect(bound1, cy - dd, br, cy - dg2))
+        contours.append(rect(bound2, cy + dg2, br, cy + dd))
 
-    if bottom == LIGHT or bottom == BOLD:
-        bound = bmv + boxdrawing_sbound(left, right, top)
+    if bottom == LIGHT or bottom == HEAVY:
+        bound = cy + boxdrawing_sbound(left, right, top)
         if bottom == LIGHT:
-            contours.append(rect(bmh - swl2, bb, bmh + swl2, bound))
+            contours.append(rect(cx - swl2, bb, cx + swl2, bound))
         else:
-            contours.append(rect(bmh - swb2, bb, bmh + swb2, bound))
+            contours.append(rect(cx - swh2, bb, cx + swh2, bound))
     elif bottom == DOUBLE:
-        bound1, bound2 = (bmv + x for x in boxdrawing_dbound(left, right))
-        contours.append(rect(bmh - dldisp, bb, bmh - dlgap2, bound1))
-        contours.append(rect(bmh + dlgap2, bb, bmh + dldisp, bound2))
+        bound1, bound2 = (cy + x for x in boxdrawing_dbound(left, right))
+        contours.append(rect(cx - dd, bb, cx - dg2, bound1))
+        contours.append(rect(cx + dg2, bb, cx + dd, bound2))
 
     return contours
 
 def boxdrawing_hdash(number, weight):
     s = float(bw) / number
-    dl = 0.75 * s
-    sw2 = swl2 if weight == LIGHT else swb2
-    return [rect(l, bmv - sw2, l + dl, bmv + sw2)
-            for l in frange(bl + s / 8.0, br, s)]
+    dl = s / 2.0
+    sw2 = swl2 if weight == LIGHT else swh2
+    return [rect(l, cy - sw2, l + dl, cy + sw2)
+            for l in frange(bl + s / 4.0, br, s)]
 
 def boxdrawing_vdash(number, weight):
     s = float(bh) / number
-    dl = 0.75 * s
-    sw2 = swl2 if weight == LIGHT else swb2
-    return [rect(bmh - sw2, b, bmh + sw2, b + dl)
-            for b in frange(bb + s / 8.0, bt, s)]
+    dl = s / 2.0
+    sw2 = swl2 if weight == LIGHT else swh2
+    return [rect(cx - sw2, b, cx + sw2, b + dl)
+            for b in frange(bb + s / 4.0, bt, s)]
 
 def boxdrawing_arc(xref=False, yref=False):
     K = 0.5522847498
@@ -176,18 +176,18 @@ def boxdrawing_arc(xref=False, yref=False):
     Co = K * (r + swl2) - r
 
     c = fontforge.contour()
-    c.moveTo(bl, bmv + swl2)
-    c.lineTo(bmh - r, bmv + swl2)
-    c.cubicTo((bmh + Ci, bmv + swl2),
-              (bmh - swl2, bmv - Ci),
-              (bmh - swl2, bmv + r))
-    c.lineTo(bmh - swl2, bt)
-    c.lineTo(bmh + swl2, bt)
-    c.lineTo(bmh + swl2, bmv + r)
-    c.cubicTo((bmh + swl2, bmv - Co),
-              (bmh + Co, bmv - swl2),
-              (bmh - r, bmv - swl2))
-    c.lineTo(bl, bmv - swl2)
+    c.moveTo(bl, cy + swl2)
+    c.lineTo(cx - r, cy + swl2)
+    c.cubicTo((cx + Ci, cy + swl2),
+              (cx - swl2, cy - Ci),
+              (cx - swl2, cy + r))
+    c.lineTo(cx - swl2, bt)
+    c.lineTo(cx + swl2, bt)
+    c.lineTo(cx + swl2, cy + r)
+    c.cubicTo((cx + swl2, cy - Co),
+              (cx + Co, cy - swl2),
+              (cx - r, cy - swl2))
+    c.lineTo(bl, cy - swl2)
     c.closed = True
 
     if xref:
@@ -224,85 +224,85 @@ def boxdrawing_diagonal(up=True, down=True):
     return contours
 
 addchar(font, 0x2500, boxdrawing(LIGHT, NONE,  LIGHT, NONE))
-addchar(font, 0x2501, boxdrawing(BOLD,  NONE,  BOLD,  NONE))
+addchar(font, 0x2501, boxdrawing(HEAVY, NONE,  HEAVY, NONE))
 addchar(font, 0x2502, boxdrawing(NONE,  LIGHT, NONE,  LIGHT))
-addchar(font, 0x2503, boxdrawing(NONE,  BOLD,  NONE,  BOLD))
+addchar(font, 0x2503, boxdrawing(NONE,  HEAVY, NONE,  HEAVY))
 addchar(font, 0x2504, boxdrawing_hdash(3, LIGHT))
-addchar(font, 0x2505, boxdrawing_hdash(3, BOLD))
+addchar(font, 0x2505, boxdrawing_hdash(3, HEAVY))
 addchar(font, 0x2506, boxdrawing_vdash(3, LIGHT))
-addchar(font, 0x2507, boxdrawing_vdash(3, BOLD))
+addchar(font, 0x2507, boxdrawing_vdash(3, HEAVY))
 addchar(font, 0x2508, boxdrawing_hdash(4, LIGHT))
-addchar(font, 0x2509, boxdrawing_hdash(4, BOLD))
+addchar(font, 0x2509, boxdrawing_hdash(4, HEAVY))
 addchar(font, 0x250A, boxdrawing_vdash(4, LIGHT))
-addchar(font, 0x250B, boxdrawing_vdash(4, BOLD))
+addchar(font, 0x250B, boxdrawing_vdash(4, HEAVY))
 addchar(font, 0x250C, boxdrawing(NONE,  NONE,  LIGHT, LIGHT))
-addchar(font, 0x250D, boxdrawing(NONE,  NONE,  BOLD,  LIGHT))
-addchar(font, 0x250E, boxdrawing(NONE,  NONE,  LIGHT, BOLD))
-addchar(font, 0x250F, boxdrawing(NONE,  NONE,  BOLD,  BOLD))
+addchar(font, 0x250D, boxdrawing(NONE,  NONE,  HEAVY, LIGHT))
+addchar(font, 0x250E, boxdrawing(NONE,  NONE,  LIGHT, HEAVY))
+addchar(font, 0x250F, boxdrawing(NONE,  NONE,  HEAVY, HEAVY))
 addchar(font, 0x2510, boxdrawing(LIGHT, NONE,  NONE,  LIGHT))
-addchar(font, 0x2511, boxdrawing(BOLD,  NONE,  NONE,  LIGHT))
-addchar(font, 0x2512, boxdrawing(LIGHT, NONE,  NONE,  BOLD))
-addchar(font, 0x2513, boxdrawing(BOLD,  NONE,  NONE,  BOLD))
+addchar(font, 0x2511, boxdrawing(HEAVY, NONE,  NONE,  LIGHT))
+addchar(font, 0x2512, boxdrawing(LIGHT, NONE,  NONE,  HEAVY))
+addchar(font, 0x2513, boxdrawing(HEAVY, NONE,  NONE,  HEAVY))
 addchar(font, 0x2514, boxdrawing(NONE,  LIGHT, LIGHT, NONE))
-addchar(font, 0x2515, boxdrawing(NONE,  LIGHT, BOLD,  NONE))
-addchar(font, 0x2516, boxdrawing(NONE,  BOLD,  LIGHT, NONE))
-addchar(font, 0x2517, boxdrawing(NONE,  BOLD,  BOLD,  NONE))
+addchar(font, 0x2515, boxdrawing(NONE,  LIGHT, HEAVY, NONE))
+addchar(font, 0x2516, boxdrawing(NONE,  HEAVY, LIGHT, NONE))
+addchar(font, 0x2517, boxdrawing(NONE,  HEAVY, HEAVY, NONE))
 addchar(font, 0x2518, boxdrawing(LIGHT, LIGHT, NONE,  NONE))
-addchar(font, 0x2519, boxdrawing(BOLD,  LIGHT, NONE,  NONE))
-addchar(font, 0x251A, boxdrawing(LIGHT, BOLD,  NONE,  NONE))
-addchar(font, 0x251B, boxdrawing(BOLD,  BOLD,  NONE,  NONE))
+addchar(font, 0x2519, boxdrawing(HEAVY, LIGHT, NONE,  NONE))
+addchar(font, 0x251A, boxdrawing(LIGHT, HEAVY, NONE,  NONE))
+addchar(font, 0x251B, boxdrawing(HEAVY, HEAVY, NONE,  NONE))
 addchar(font, 0x251C, boxdrawing(NONE,  LIGHT, LIGHT, LIGHT))
-addchar(font, 0x251D, boxdrawing(NONE,  LIGHT, BOLD,  LIGHT))
-addchar(font, 0x251E, boxdrawing(NONE,  BOLD,  LIGHT, LIGHT))
-addchar(font, 0x251F, boxdrawing(NONE,  LIGHT, LIGHT, BOLD))
-addchar(font, 0x2520, boxdrawing(NONE,  BOLD,  LIGHT, BOLD))
-addchar(font, 0x2521, boxdrawing(NONE,  BOLD,  BOLD,  LIGHT))
-addchar(font, 0x2522, boxdrawing(NONE,  LIGHT, BOLD,  BOLD))
-addchar(font, 0x2523, boxdrawing(NONE,  BOLD,  BOLD,  BOLD))
+addchar(font, 0x251D, boxdrawing(NONE,  LIGHT, HEAVY, LIGHT))
+addchar(font, 0x251E, boxdrawing(NONE,  HEAVY, LIGHT, LIGHT))
+addchar(font, 0x251F, boxdrawing(NONE,  LIGHT, LIGHT, HEAVY))
+addchar(font, 0x2520, boxdrawing(NONE,  HEAVY, LIGHT, HEAVY))
+addchar(font, 0x2521, boxdrawing(NONE,  HEAVY, HEAVY, LIGHT))
+addchar(font, 0x2522, boxdrawing(NONE,  LIGHT, HEAVY, HEAVY))
+addchar(font, 0x2523, boxdrawing(NONE,  HEAVY, HEAVY, HEAVY))
 addchar(font, 0x2524, boxdrawing(LIGHT, LIGHT, NONE,  LIGHT))
-addchar(font, 0x2525, boxdrawing(BOLD,  LIGHT, NONE,  LIGHT))
-addchar(font, 0x2526, boxdrawing(LIGHT, BOLD,  NONE,  LIGHT))
-addchar(font, 0x2527, boxdrawing(LIGHT, LIGHT, NONE,  BOLD))
-addchar(font, 0x2528, boxdrawing(LIGHT, BOLD,  NONE,  BOLD))
-addchar(font, 0x2529, boxdrawing(BOLD,  BOLD,  NONE,  LIGHT))
-addchar(font, 0x252A, boxdrawing(BOLD,  LIGHT, NONE,  BOLD))
-addchar(font, 0x252B, boxdrawing(BOLD,  BOLD,  NONE,  BOLD))
+addchar(font, 0x2525, boxdrawing(HEAVY, LIGHT, NONE,  LIGHT))
+addchar(font, 0x2526, boxdrawing(LIGHT, HEAVY, NONE,  LIGHT))
+addchar(font, 0x2527, boxdrawing(LIGHT, LIGHT, NONE,  HEAVY))
+addchar(font, 0x2528, boxdrawing(LIGHT, HEAVY, NONE,  HEAVY))
+addchar(font, 0x2529, boxdrawing(HEAVY, HEAVY, NONE,  LIGHT))
+addchar(font, 0x252A, boxdrawing(HEAVY, LIGHT, NONE,  HEAVY))
+addchar(font, 0x252B, boxdrawing(HEAVY, HEAVY, NONE,  HEAVY))
 addchar(font, 0x252C, boxdrawing(LIGHT, NONE,  LIGHT, LIGHT))
-addchar(font, 0x252D, boxdrawing(BOLD,  NONE,  LIGHT, LIGHT))
-addchar(font, 0x252E, boxdrawing(LIGHT, NONE,  BOLD,  LIGHT))
-addchar(font, 0x252F, boxdrawing(BOLD,  NONE,  BOLD,  LIGHT))
-addchar(font, 0x2530, boxdrawing(LIGHT, NONE,  LIGHT, BOLD))
-addchar(font, 0x2531, boxdrawing(BOLD,  NONE,  LIGHT, BOLD))
-addchar(font, 0x2532, boxdrawing(LIGHT, NONE,  BOLD,  BOLD))
-addchar(font, 0x2533, boxdrawing(BOLD,  NONE,  BOLD,  BOLD))
+addchar(font, 0x252D, boxdrawing(HEAVY, NONE,  LIGHT, LIGHT))
+addchar(font, 0x252E, boxdrawing(LIGHT, NONE,  HEAVY, LIGHT))
+addchar(font, 0x252F, boxdrawing(HEAVY, NONE,  HEAVY, LIGHT))
+addchar(font, 0x2530, boxdrawing(LIGHT, NONE,  LIGHT, HEAVY))
+addchar(font, 0x2531, boxdrawing(HEAVY, NONE,  LIGHT, HEAVY))
+addchar(font, 0x2532, boxdrawing(LIGHT, NONE,  HEAVY, HEAVY))
+addchar(font, 0x2533, boxdrawing(HEAVY, NONE,  HEAVY, HEAVY))
 addchar(font, 0x2534, boxdrawing(LIGHT, LIGHT, LIGHT, NONE))
-addchar(font, 0x2535, boxdrawing(BOLD,  LIGHT, LIGHT, NONE))
-addchar(font, 0x2536, boxdrawing(LIGHT, LIGHT, BOLD,  NONE))
-addchar(font, 0x2537, boxdrawing(BOLD,  LIGHT, BOLD,  NONE))
-addchar(font, 0x2538, boxdrawing(LIGHT, BOLD,  LIGHT, NONE))
-addchar(font, 0x2539, boxdrawing(BOLD,  BOLD,  LIGHT, NONE))
-addchar(font, 0x253A, boxdrawing(LIGHT, BOLD,  BOLD,  NONE))
-addchar(font, 0x253B, boxdrawing(BOLD,  BOLD,  BOLD,  NONE))
+addchar(font, 0x2535, boxdrawing(HEAVY, LIGHT, LIGHT, NONE))
+addchar(font, 0x2536, boxdrawing(LIGHT, LIGHT, HEAVY, NONE))
+addchar(font, 0x2537, boxdrawing(HEAVY, LIGHT, HEAVY, NONE))
+addchar(font, 0x2538, boxdrawing(LIGHT, HEAVY, LIGHT, NONE))
+addchar(font, 0x2539, boxdrawing(HEAVY, HEAVY, LIGHT, NONE))
+addchar(font, 0x253A, boxdrawing(LIGHT, HEAVY, HEAVY, NONE))
+addchar(font, 0x253B, boxdrawing(HEAVY, HEAVY, HEAVY, NONE))
 addchar(font, 0x253C, boxdrawing(LIGHT, LIGHT, LIGHT, LIGHT))
-addchar(font, 0x253D, boxdrawing(BOLD,  LIGHT, LIGHT, LIGHT))
-addchar(font, 0x253E, boxdrawing(LIGHT, LIGHT, BOLD,  LIGHT))
-addchar(font, 0x253F, boxdrawing(BOLD,  LIGHT, BOLD,  LIGHT))
-addchar(font, 0x2540, boxdrawing(LIGHT, BOLD,  LIGHT, LIGHT))
-addchar(font, 0x2541, boxdrawing(LIGHT, LIGHT, LIGHT, BOLD))
-addchar(font, 0x2542, boxdrawing(LIGHT, BOLD,  LIGHT, BOLD))
-addchar(font, 0x2543, boxdrawing(BOLD,  BOLD,  LIGHT, LIGHT))
-addchar(font, 0x2544, boxdrawing(LIGHT, BOLD,  BOLD,  LIGHT))
-addchar(font, 0x2545, boxdrawing(BOLD,  LIGHT, LIGHT, BOLD))
-addchar(font, 0x2546, boxdrawing(LIGHT, LIGHT, BOLD,  BOLD))
-addchar(font, 0x2547, boxdrawing(BOLD,  BOLD,  BOLD,  LIGHT))
-addchar(font, 0x2548, boxdrawing(BOLD,  LIGHT, BOLD,  BOLD))
-addchar(font, 0x2549, boxdrawing(BOLD,  BOLD,  LIGHT, BOLD))
-addchar(font, 0x254A, boxdrawing(LIGHT, BOLD,  BOLD,  BOLD))
-addchar(font, 0x254B, boxdrawing(BOLD,  BOLD,  BOLD,  BOLD))
+addchar(font, 0x253D, boxdrawing(HEAVY, LIGHT, LIGHT, LIGHT))
+addchar(font, 0x253E, boxdrawing(LIGHT, LIGHT, HEAVY, LIGHT))
+addchar(font, 0x253F, boxdrawing(HEAVY, LIGHT, HEAVY, LIGHT))
+addchar(font, 0x2540, boxdrawing(LIGHT, HEAVY, LIGHT, LIGHT))
+addchar(font, 0x2541, boxdrawing(LIGHT, LIGHT, LIGHT, HEAVY))
+addchar(font, 0x2542, boxdrawing(LIGHT, HEAVY, LIGHT, HEAVY))
+addchar(font, 0x2543, boxdrawing(HEAVY, HEAVY, LIGHT, LIGHT))
+addchar(font, 0x2544, boxdrawing(LIGHT, HEAVY, HEAVY, LIGHT))
+addchar(font, 0x2545, boxdrawing(HEAVY, LIGHT, LIGHT, HEAVY))
+addchar(font, 0x2546, boxdrawing(LIGHT, LIGHT, HEAVY, HEAVY))
+addchar(font, 0x2547, boxdrawing(HEAVY, HEAVY, HEAVY, LIGHT))
+addchar(font, 0x2548, boxdrawing(HEAVY, LIGHT, HEAVY, HEAVY))
+addchar(font, 0x2549, boxdrawing(HEAVY, HEAVY, LIGHT, HEAVY))
+addchar(font, 0x254A, boxdrawing(LIGHT, HEAVY, HEAVY, HEAVY))
+addchar(font, 0x254B, boxdrawing(HEAVY, HEAVY, HEAVY, HEAVY))
 addchar(font, 0x254C, boxdrawing_hdash(2, LIGHT))
-addchar(font, 0x254D, boxdrawing_hdash(2, BOLD))
+addchar(font, 0x254D, boxdrawing_hdash(2, HEAVY))
 addchar(font, 0x254E, boxdrawing_vdash(2, LIGHT))
-addchar(font, 0x254F, boxdrawing_vdash(2, BOLD))
+addchar(font, 0x254F, boxdrawing_vdash(2, HEAVY))
 addchar(font, 0x2550, boxdrawing(DOUBLE, NONE,   DOUBLE, NONE))
 addchar(font, 0x2551, boxdrawing(NONE,   DOUBLE, NONE,   DOUBLE))
 addchar(font, 0x2552, boxdrawing(NONE,   NONE,   DOUBLE, LIGHT))
@@ -343,14 +343,14 @@ addchar(font, 0x2574, boxdrawing(LIGHT, NONE,  NONE,  NONE))
 addchar(font, 0x2575, boxdrawing(NONE,  LIGHT, NONE,  NONE))
 addchar(font, 0x2576, boxdrawing(NONE,  NONE,  LIGHT, NONE))
 addchar(font, 0x2577, boxdrawing(NONE,  NONE,  NONE,  LIGHT))
-addchar(font, 0x2578, boxdrawing(BOLD,  NONE,  NONE,  NONE))
-addchar(font, 0x2579, boxdrawing(NONE,  BOLD,  NONE,  NONE))
-addchar(font, 0x257A, boxdrawing(NONE,  NONE,  BOLD,  NONE))
-addchar(font, 0x257B, boxdrawing(NONE,  NONE,  NONE,  BOLD))
-addchar(font, 0x257C, boxdrawing(LIGHT, NONE,  BOLD,  NONE))
-addchar(font, 0x257D, boxdrawing(NONE,  LIGHT, NONE,  BOLD))
-addchar(font, 0x257E, boxdrawing(BOLD,  NONE,  LIGHT, NONE))
-addchar(font, 0x257F, boxdrawing(NONE,  BOLD,  NONE,  LIGHT))
+addchar(font, 0x2578, boxdrawing(HEAVY, NONE,  NONE,  NONE))
+addchar(font, 0x2579, boxdrawing(NONE,  HEAVY, NONE,  NONE))
+addchar(font, 0x257A, boxdrawing(NONE,  NONE,  HEAVY, NONE))
+addchar(font, 0x257B, boxdrawing(NONE,  NONE,  NONE,  HEAVY))
+addchar(font, 0x257C, boxdrawing(LIGHT, NONE,  HEAVY, NONE))
+addchar(font, 0x257D, boxdrawing(NONE,  LIGHT, NONE,  HEAVY))
+addchar(font, 0x257E, boxdrawing(HEAVY, NONE,  LIGHT, NONE))
+addchar(font, 0x257F, boxdrawing(NONE,  HEAVY, NONE,  LIGHT))
 
 # Block Elements
 def block_shade(darkness):
@@ -382,16 +382,16 @@ def block_shade(darkness):
 def block_quadrant(ul, ur, ll, lr):
     contours = []
     if ul:
-        contours.append(rect(bl, bmv, bmh, bt))
+        contours.append(rect(bl, cy, cx, bt))
     if ur:
-        contours.append(rect(bmh, bmv, br, bt))
+        contours.append(rect(cx, cy, br, bt))
     if ll:
-        contours.append(rect(bl, bb, bmh, bmv))
+        contours.append(rect(bl, bb, cx, cy))
     if lr:
-        contours.append(rect(bmh, bb, br, bmv))
+        contours.append(rect(cx, bb, br, cy))
     return contours
 
-addchar(font, 0x2580, [rect(bl, bmv, br, bt)])
+addchar(font, 0x2580, [rect(bl, cy, br, bt)])
 addchar(font, 0x2581, [rect(bl, bb, br, bb + bh * 1.0/8.0)])
 addchar(font, 0x2582, [rect(bl, bb, br, bb + bh * 2.0/8.0)])
 addchar(font, 0x2583, [rect(bl, bb, br, bb + bh * 3.0/8.0)])
@@ -407,7 +407,7 @@ addchar(font, 0x258C, [rect(bl, bb, bl + bw * 4.0/8.0, bt)])
 addchar(font, 0x258D, [rect(bl, bb, bl + bw * 3.0/8.0, bt)])
 addchar(font, 0x258E, [rect(bl, bb, bl + bw * 2.0/8.0, bt)])
 addchar(font, 0x258F, [rect(bl, bb, bl + bw * 1.0/8.0, bt)])
-addchar(font, 0x2590, [rect(bmh, bb, br, bt)])
+addchar(font, 0x2590, [rect(cx, bb, br, bt)])
 addchar(font, 0x2591, block_shade('light'))
 addchar(font, 0x2592, block_shade('medium'))
 addchar(font, 0x2593, block_shade('dark'))
@@ -428,13 +428,13 @@ addchar(font, 0x259F, block_quadrant(False, True,  True,  True))
 def geometric_triangle(rotation=0, black=True):
     sw = 46
     xm = 37
-    b = bl + (bh - bw + 2 * xm) / 2.0
+    b = bb + (bh - bw + 2 * xm) / 2.0
     t = b + (bw - 2 * xm) * math.sin(math.pi / 3)
     contours = []
 
     c = fontforge.contour()
     c.moveTo(bl + xm, b)
-    c.lineTo(bmh, t)
+    c.lineTo(cx, t)
     c.lineTo(br - xm, b)
     c.closed = True
     contours.append(c)
@@ -444,15 +444,15 @@ def geometric_triangle(rotation=0, black=True):
         c = fontforge.contour()
         c.moveTo(bl + xm, b + sw)
         c.lineTo(br - xm, b + sw)
-        c.lineTo(bmh, t - 2 * sw)
+        c.lineTo(cx, t - 2 * sw)
         c.closed = True
         contours.append(c)
 
     if rotation:
         cy = (b + t) / 2.0
-        rotT = psMat.compose(psMat.translate(-bmh, -cy),
+        rotT = psMat.compose(psMat.translate(-cx, -cy),
                psMat.compose(psMat.rotate(rotation),
-                             psMat.translate(bmh, cy)))
+                             psMat.translate(cx, cy)))
         for c in contours:
             c.transform(rotT)
     return contours
@@ -499,7 +499,7 @@ for n in range(256):
 def powerline_triangle(xref=False):
     c = fontforge.contour()
     c.moveTo(bl, bt)
-    c.lineTo(br, bmv)
+    c.lineTo(br, cy)
     c.lineTo(bl, bb)
     c.closed = True
     if xref:
@@ -507,19 +507,19 @@ def powerline_triangle(xref=False):
     return [c]
 
 def powerline_angle(xref=False):
-    t = math.atan2(bmv - bb, bw)
+    t = math.atan2(cy - bb, bw)
     dx = swl2 / math.sin(t)
     dy = swl2 / math.cos(t)
 
     c = fontforge.contour()
     c.moveTo(bl, bt)
     c.lineTo(bl + dx, bt)
-    c.lineTo(br, bmv + dy)
-    c.lineTo(br, bmv - dy)
+    c.lineTo(br, cy + dy)
+    c.lineTo(br, cy - dy)
     c.lineTo(bl + dx, bb)
     c.lineTo(bl, bb)
     c.lineTo(bl, bb + dy)
-    c.lineTo(br - dx, bmv)
+    c.lineTo(br - dx, cy)
     c.lineTo(bl, bt - dy)
     c.closed = True
     if xref:

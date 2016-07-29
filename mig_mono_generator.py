@@ -13,6 +13,7 @@ def copy_glyphs(srcfont, dstfont):
         dstfont.paste()
 
 fontname = ('MiG Mono', 'MiG Mono Regular', 'mig-mono-regular', 'Regular')
+version = '1.001.20160729'
 os2_panose = (2, 11, 5, 9, 2, 2, 3, 2, 2, 7)
 migfile = 'mig-mono-regular.ttf'
 mgenfile = 'source/mgenplus-1m-regular.ttf'
@@ -33,16 +34,12 @@ for srcfile in (mgenfile, incfile, octfile, rpfile):
         sys.exit(1)
 
 
-fontforge.setPrefs('ClearInstrsBigChanges', 0)
-fontforge.setPrefs('CopyTTFInstrs', 1)
-fontforge.setPrefs('CoverageFormatsAllowed', 1)
-
 fMig = fontforge.font()
 fMig.familyname = fontname[0]
 fMig.fullname = fontname[1]
 fMig.fontname = fontname[2]
 fMig.weight = fontname[3]
-fMig.version = '1.000.20160727'
+fMig.version = version
 fMig.copyright = """\
 [MiG Mono]
 Copyright (c) 2016 cions (gh.cions@gmail.com)
@@ -89,9 +86,6 @@ fMig.hhea_linegap = 0
 fMig.os2_panose = os2_panose
 fMig.os2_unicoderanges = (-536870145, 2051538411, 18, 0)
 fMig.os2_codepages = (1074921887, -539557888)
-
-fMig.hasvmetrics = True
-fMig.head_optimized_for_cleartype = True
 
 # Merge Mgen+
 fMgen = fontforge.open(mgenfile)
@@ -160,6 +154,9 @@ for glyph in fOct.glyphs():
 
 fOct.selection.select(('unicode', 'ranges'), 0xF000, 0xF8FF)
 copy_glyphs(fOct, fMig)
+
+fMig.selection.select(('unicode',), 0xF103, 0xF104)
+fMig.transform(psMat.translate(0, -110))
 
 fOct.close()
 
